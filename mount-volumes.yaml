@@ -1,0 +1,51 @@
+SenzaInfo:
+  StackName: empty
+  Parameters:
+    - Image:
+        Description: ""
+    - NodeCount:
+        Description: ""
+    - ScalyrKey:
+        Description: ""
+    - AvailabilityZone:
+        Description: ""
+        Default: ""
+
+SenzaComponents:
+
+  - Configuration:
+      Type: Senza::StupsAutoConfiguration
+      # AvailabilityZones: "{{Arguments.AvailabilityZone}}"
+
+  - AppServer:
+      Type: Senza::TaupageAutoScalingGroup
+      InstanceType: t2.micro
+      SecurityGroups:
+        - app-empty
+      IamRoles:
+        - app-empty
+      AssociatePublicIpAddress: false
+      AutoScaling:
+        Minimum: "{{Arguments.NodeCount}}"
+        Maximum: "{{Arguments.NodeCount}}"
+        MetricType: CPU
+      TaupageConfig:
+        runtime: Docker
+        source: "{{Arguments.Image}}"
+        scalyr_account_key: "{{Arguments.ScalyrKey}}"
+        volumes:
+          ebs:
+            /dev/xvdf: cassandra-data-volume
+            /dev/xvdg: cassandra-commitlog-volume
+        mounts:
+          /var/cassandra/data/data:
+            partition: /dev/xvdf
+            erase_on_boot: false
+            filesystem: ext4
+            # filesystem: xfs
+          /var/cassandra/data/commitlog:
+            partition: /dev/xvdg
+            erase_on_boot: false
+            filesystem: ext4
+            # filesystem: xfs
+
